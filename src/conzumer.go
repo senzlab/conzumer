@@ -2,11 +2,11 @@ package main
 
 import (
     "fmt"
-	"log"
+    "log"
     "os"
     "time"
-	"github.com/Shopify/sarama"
-	"github.com/wvanbergen/kafka/consumergroup"
+    "github.com/Shopify/sarama"
+    "github.com/wvanbergen/kafka/consumergroup"
 )
 
 const (
@@ -19,7 +19,7 @@ func main() {
     // setup sarama log to stdout
 	sarama.Logger = log.New(os.Stdout, "", log.Ltime)
 
-    // init consumer 
+    // init consumer
     cg, err := initConsumer()
     if err != nil {
         fmt.Println("Error consumer goup: ", err.Error())
@@ -50,6 +50,7 @@ func consume(cg *consumergroup.ConsumerGroup) {
     for {
         select {
         case msg := <-cg.Messages():
+            // messages coming through chanel
             // only take messages from subscribed topic
 			if msg.Topic != topic {
                 continue
@@ -58,7 +59,8 @@ func consume(cg *consumergroup.ConsumerGroup) {
             fmt.Println("Topic: ", msg.Topic)
             fmt.Println("Value: ", string(msg.Value))
 
-            // commit to zookeeper
+            // commit to zookeeper that message is read
+            // this prevent read message multiple times after restart
             err := cg.CommitUpto(msg)
             if err != nil {
                 fmt.Println("Error commit zookeeper: ", err.Error())
@@ -66,4 +68,3 @@ func consume(cg *consumergroup.ConsumerGroup) {
         }
     }
 }
-
